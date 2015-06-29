@@ -1,0 +1,28 @@
+{
+  "name": "leaflet-solr-heatmap",
+  "version": "0.0.0",
+  "description": "A Leaflet plugin using Solr 5.x heatmap facets",
+  "main": "leafletSolrHeatmap.js",
+  "keywords": [
+    "leaflet",
+    "solr",
+    "heatmap"
+  ],
+  "authors": [
+    "Jack Reed"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/mejackreed/leaflet-solr-heatmap",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "leaflet.markerclusterer": "~0.4.0",
+    "leaflet": "~0.7.3"
+  }
+}
