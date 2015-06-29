@@ -1,7 +1,7 @@
-L.Solr = L.GeoJSON.extend({
+L.SolrHeatmap = L.GeoJSON.extend({
   options: {
-    field: 'loc_srpt',
-    solrRequestHandler: 'select'
+    solrRequestHandler: 'select',
+    type: 'geojsonGrid'
   },
 
   initialize: function(url, options) {
@@ -214,8 +214,8 @@ L.Solr = L.GeoJSON.extend({
   }
 });
 
-L.solr = function(url, options) {
-  return new L.Solr(url, options);
+L.solrHeatmap = function(url, options) {
+  return new L.SolrHeatmap(url, options);
 };
 
 L.LatLngBounds.prototype.getWest = function() {
@@ -228,25 +228,28 @@ L.LatLngBounds.prototype.getEast = function() {
   return east > 180 ? 180 : east;
 };
 
-L.MarkerCluster.prototype.initialize = function(group, zoom, a, b) {
+// Check if L.MarkerCluster is included
+if (typeof L.MarkerCluster !== 'undefined') {
+  L.MarkerCluster.prototype.initialize = function(group, zoom, a, b) {
 
-	L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
+  	L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
 
-	this._group = group;
-	this._zoom = zoom;
+  	this._group = group;
+  	this._zoom = zoom;
 
-	this._markers = [];
-	this._childClusters = [];
-	this._childCount = 0;
-	this._iconNeedsUpdate = true;
+  	this._markers = [];
+  	this._childClusters = [];
+  	this._childCount = 0;
+  	this._iconNeedsUpdate = true;
 
-	this._bounds = new L.LatLngBounds();
+  	this._bounds = new L.LatLngBounds();
 
-	if (a) {
-		this._addChild(a);
-	}
-	if (b) {
-		this._addChild(b);
-    this._childCount = b.options.count;
-	}
-};
+  	if (a) {
+  		this._addChild(a);
+  	}
+  	if (b) {
+  		this._addChild(b);
+      this._childCount = b.options.count;
+  	}
+  };
+}
