@@ -157,6 +157,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
     _this.eachLayer(function(layer) {
       var color;
+      console.log(color)
       $.each(_this.classification, function(i, val) {
         if (layer.feature.properties.count >= val) {
           color = scale[i];
