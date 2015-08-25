@@ -147,12 +147,26 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
   _styleByCount: function() {
     var _this = this;
+    var one_d_array = [];
+    for(var i = 0; i < _this.facetHeatmap.counts_ints2D.length; i++) {
+      one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
+    }
+    var series = new geostats(one_d_array);
+    _this.classification = series.getClassJenks(5);
+    var scale = ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'];
+
     _this.eachLayer(function(layer) {
-      var ratio = ((layer.feature.properties.count) / Math.log1p(_this.docsCount));
+      var color;
+      console.log(color)
+      $.each(_this.classification, function(i, val) {
+        if (layer.feature.properties.count >= val) {
+          color = scale[i];
+        }
+      });
       layer.setStyle({
-        fillColor: '#F00',
-        fillOpacity: ratio,
-        weight: 1
+        fillColor: color,
+        fillOpacity: 0.5,
+        weight: 0
       });
     });
   },
@@ -192,7 +206,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
         var totalTime = 'Solr response time: ' + (Date.now() - startTime) + ' ms';
         $('#responseTime').html(totalTime);
         _this.docsCount = data.response.numFound;
-        $('#numDocs').html('Number of docs: ' + _this.docsCount);
+        $('#numDocs').html('Number of docs: ' + _this.docsCount.toLocaleString());
         _this.renderStart = Date.now();
         _this._computeHeatmapObject(data);
       }

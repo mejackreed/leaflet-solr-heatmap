@@ -1,11 +1,11 @@
-var map = L.map('map').setView([0, 0], 2);
+var map = L.map('map').setView([0, 0], 1);
 
 var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
 }).addTo(map);
 
 function onEachFeature(feature, layer) {
-  var count = feature.properties.count.toString();
+  var count = feature.properties.count.toLocaleString();
   layer.bindPopup(count);
 }
 
@@ -16,6 +16,7 @@ var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/gettingstarted', {
 
   // Set type of visualization. Allowed types: 'geojsonGrid', 'clusters' Note: 'clusters' requires LeafletMarkerClusterer
   type: 'geojsonGrid',
+  // type: 'clusters',
 
   // Inherited from L.GeoJSON
   onEachFeature: onEachFeature
