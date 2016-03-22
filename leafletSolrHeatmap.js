@@ -2,7 +2,8 @@ L.SolrHeatmap = L.GeoJSON.extend({
   options: {
     solrRequestHandler: 'select',
     type: 'geojsonGrid',
-    colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']
+    colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'],
+    maxSampleSize: Number.MAX_SAFE_INTEGER  // for Jenks classification
   },
 
   initialize: function(url, options) {
@@ -153,7 +154,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
 	if (_this.facetHeatmap.counts_ints2D[i] != null)
 	    one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
     }
-    var series = new geostats(one_d_array);
+    var sampled_array = _this._sampleCounts(one_d_array);
+
+    var series = new geostats(sampled_array);
     var scale = _this.options.colors; 
     _this.classification = series.getClassJenks(scale.length);
 
@@ -172,6 +175,25 @@ L.SolrHeatmap = L.GeoJSON.extend({
       });
     });
   },
+
+  // Jenks classification can be slow so we optionally sample the data
+  // typically any big sample of counts are much the same, don't need to classify on all of them
+  _sampleCounts: function(passedArray)
+  {
+      _this = this;
+      if (passedArray.length <= _this.options.maxSampleSize)
+	  return passedArray;   // array too small to sample
+      
+      var maxValue = Math.max.apply(Math, passedArray);
+      var sampledArray = [];
+      var period = Math.ceil(passedArray.length / _this.options.maxSampleSize);
+      for (i = 0 ; i < passedArray.length ; i = i + period)
+	  sampledArray.push(passedArray[i]);
+
+      sampledArray.push(maxValue);  // make sure largest value gets in, doesn't matter much if duplicated
+      return sampledArray
+  },
+
 
   _minLng: function(column) {
     return this.facetHeatmap.minX + (this.lengthX * column);
