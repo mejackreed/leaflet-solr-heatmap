@@ -1,7 +1,8 @@
 L.SolrHeatmap = L.GeoJSON.extend({
   options: {
     solrRequestHandler: 'select',
-    type: 'geojsonGrid'
+    type: 'geojsonGrid',
+    colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']
   },
 
   initialize: function(url, options) {
@@ -153,12 +154,12 @@ L.SolrHeatmap = L.GeoJSON.extend({
 	    one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
     }
     var series = new geostats(one_d_array);
-    _this.classification = series.getClassJenks(5);
-    var scale = ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'];
+    var scale = _this.options.colors; 
+    _this.classification = series.getClassJenks(scale.length);
+
 
     _this.eachLayer(function(layer) {
       var color;
-      console.log(color)
       $.each(_this.classification, function(i, val) {
         if (layer.feature.properties.count >= val) {
           color = scale[i];
