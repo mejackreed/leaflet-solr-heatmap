@@ -149,7 +149,8 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var _this = this;
     var one_d_array = [];
     for(var i = 0; i < _this.facetHeatmap.counts_ints2D.length; i++) {
-      one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
+	if (_this.facetHeatmap.counts_ints2D[i] != null)
+	    one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
     }
     var series = new geostats(one_d_array);
     _this.classification = series.getClassJenks(5);
