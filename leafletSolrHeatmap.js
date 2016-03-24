@@ -47,6 +47,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
       case 'clusters':
         _this.clusterMarkers.clearLayers();
         break;
+      case 'heatmap':
+	  map.removeLayer(_this.heatmapLayer);
+	  break;
     }
   },
 
@@ -90,9 +93,70 @@ L.SolrHeatmap = L.GeoJSON.extend({
     });
 
     _this.addData(geojson);
-    _this._styleByCount();
+    var colors = _this.options.colors; 
+    var classifications = _this._getClassifications(colors.length);
+    _this._styleByCount(classifications);
     _this._showRenderTime();
   },
+
+  _createHeatmap: function(){
+    var _this = this;
+    var heatmapCells = [];
+    var cellSize = _this._getCellSize() * .75;
+    var colors = _this.options.colors; 
+    var classifications = _this._getClassifications(colors.length - 1);
+    var maxValue = classifications[classifications.length - 1];
+    var gradient = _this._getGradient(classifications);
+
+    $.each(_this.facetHeatmap.counts_ints2D, function(row, value) {
+      if (value === null) {
+        return;
+      }
+
+      $.each(value, function(column, val) {
+        if (val === 0) {
+          return;
+        }
+	var scaledValue = Math.min((val / maxValue), 1);
+	var current = [_this._minLat(row), _this._minLng(column), scaledValue];
+	heatmapCells.push(current);
+	// need to create options object to set gradient, blu, radius, max
+      })
+    });
+
+    // settting max due to bug
+    // http://stackoverflow.com/questions/26767722/leaflet-heat-issue-with-adding-points-with-intensity
+    var options = {max: .0001, radius: cellSize, gradient: gradient};
+    var heatmapLayer = L.heatLayer(heatmapCells, options);
+    heatmapLayer.addTo(map);
+    _this.heatmapLayer = heatmapLayer;
+    _this._showRenderTime();
+  },
+
+  // heatmap display need hash of scaled counts value, color pairs
+  _getGradient: function (classifications){
+    var gradient = {};
+    var maxValue = classifications[classifications.length - 1];
+    var colors = _this.options.colors; 
+    // skip first lower bound, assumed to be 0 from Jenks
+    for (var i = 1 ; i < classifications.length ; i++)
+	gradient[classifications[i] / maxValue] = colors[i];
+    return gradient;
+  },
+
+  // compute size of heatmap cells in pixels
+  _getCellSize: function(){
+    _this = this;
+    var mapSize = map.getSize();  // should't we use solr returned map extent?
+    var widthInPixels = mapSize.x; 
+    var heightInPixels = mapSize.y;
+    var heatmapRows = _this.facetHeatmap.rows;
+    var heatmapColumns = _this.facetHeatmap.columns;
+    var sizeX = widthInPixels / heatmapColumns;
+    var sizeY = heightInPixels / heatmapRows;
+    var size = Math.ceil(Math.max(sizeX, sizeY));
+    return size;
+},
 
   _showRenderTime: function() {
     var _this = this,
@@ -144,10 +208,14 @@ L.SolrHeatmap = L.GeoJSON.extend({
       case 'clusters':
         _this._createClusters();
         break;
+    case 'heatmap':
+	_this._createHeatmap();
+	break;
     }
   },
 
-  _styleByCount: function() {
+  _getClassifications: function(howMany)
+  {
     var _this = this;
     var one_d_array = [];
     for(var i = 0; i < _this.facetHeatmap.counts_ints2D.length; i++) {
@@ -158,12 +226,17 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
     var series = new geostats(sampled_array);
     var scale = _this.options.colors; 
-    _this.classification = series.getClassJenks(scale.length);
+    var classifications = series.getClassJenks(howMany);
+    return classifications;
+  },
 
+  _styleByCount: function(classifications) {
+    var _this = this;
+    var scale = _this.options.colors;
 
     _this.eachLayer(function(layer) {
       var color;
-      $.each(_this.classification, function(i, val) {
+      $.each(classifications, function(i, val) {
         if (layer.feature.properties.count >= val) {
           color = scale[i];
         }
@@ -189,7 +262,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
       var period = Math.ceil(passedArray.length / _this.options.maxSampleSize);
       for (i = 0 ; i < passedArray.length ; i = i + period)
 	  sampledArray.push(passedArray[i]);
-
+      
       sampledArray.push(maxValue);  // make sure largest value gets in, doesn't matter much if duplicated
       return sampledArray
   },
