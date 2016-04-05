@@ -19,8 +19,10 @@ var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/gettingstarted', {
 Option | Type | Default | Description
 ------ | ---- | ------- | -----------
 `field` | `String` | `null` | *Required.* Solr field with geospatial data (should be type Spatial Recursive Prefix Tree)
-`type` | `String` | `'geojsonGrid'` | Type of visualization. Accepts `geojsonGrid` and `clusters`
+`type` | `String` | `'geojsonGrid'` | Type of visualization. Accepts `geojsonGrid`, `clusters` and `heatmap`
 `solrRequestHandler` | `String` | `'select'` | Request handler for Solr
+`colors` | `Array` | `['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']` | Colors for heatmap.  Array can be of any length.
+`maxSampleSize` | `Number` | `Number.MAX_SAFE_INTEGER` | For improved performance, run Jenks classification on only a sample of Solr counts.  Default value turns off sampling.  Typical value is 400.
 
 ## Running locally
 
