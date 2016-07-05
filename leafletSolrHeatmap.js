@@ -55,8 +55,8 @@ L.SolrHeatmap = L.GeoJSON.extend({
         _this.clusterMarkers.clearLayers();
         break;
       case 'heatmap':
-	  _this._map.removeLayer(_this.heatmapLayer);
-	  break;
+    _this._map.removeLayer(_this.heatmapLayer);
+    break;
     }
   },
 
@@ -124,10 +124,10 @@ L.SolrHeatmap = L.GeoJSON.extend({
         if (val === 0) {
           return;
         }
-	var scaledValue = Math.min((val / maxValue), 1);
-	var current = [_this._minLat(row), _this._minLng(column), scaledValue];
-	heatmapCells.push(current);
-	// need to create options object to set gradient, blu, radius, max
+  var scaledValue = Math.min((val / maxValue), 1);
+  var current = [_this._minLat(row), _this._minLng(column), scaledValue];
+  heatmapCells.push(current);
+  // need to create options object to set gradient, blu, radius, max
       })
     });
 
@@ -147,7 +147,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var colors = _this.options.colors; 
     // skip first lower bound, assumed to be 0 from Jenks
     for (var i = 1 ; i < classifications.length ; i++)
-	gradient[classifications[i] / maxValue] = colors[i];
+  gradient[classifications[i] / maxValue] = colors[i];
     return gradient;
   },
 
@@ -215,9 +215,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
       case 'clusters':
         _this._createClusters();
         break;
-    case 'heatmap':
-	_this._createHeatmap();
-	break;
+      case 'heatmap':
+        _this._createHeatmap();
+        break;
     }
   },
 
@@ -226,8 +226,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var _this = this;
     var one_d_array = [];
     for(var i = 0; i < _this.facetHeatmap.counts_ints2D.length; i++) {
-	if (_this.facetHeatmap.counts_ints2D[i] != null)
-	    one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
+      if (_this.facetHeatmap.counts_ints2D[i] != null) {
+        one_d_array = one_d_array.concat(_this.facetHeatmap.counts_ints2D[i]);
+      }
     }
     var sampled_array = _this._sampleCounts(one_d_array);
 
@@ -258,22 +259,22 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
   // Jenks classification can be slow so we optionally sample the data
   // typically any big sample of counts are much the same, don't need to classify on all of them
-  _sampleCounts: function(passedArray)
-  {
-      _this = this;
-      if (passedArray.length <= _this.options.maxSampleSize)
-	  return passedArray;   // array too small to sample
-      
-      var maxValue = Math.max.apply(Math, passedArray);
-      var sampledArray = [];
-      var period = Math.ceil(passedArray.length / _this.options.maxSampleSize);
-      for (i = 0 ; i < passedArray.length ; i = i + period)
-	  sampledArray.push(passedArray[i]);
-      
-      sampledArray.push(maxValue);  // make sure largest value gets in, doesn't matter much if duplicated
-      return sampledArray
-  },
+  _sampleCounts: function(passedArray) {
+    var _this = this;
+    if (passedArray.length <= _this.options.maxSampleSize) {
+      return passedArray;   // array too small to sample
+    };
 
+    var maxValue = Math.max.apply(Math, passedArray);
+    var sampledArray = [];
+    var period = Math.ceil(passedArray.length / _this.options.maxSampleSize);
+    for (i = 0 ; i < passedArray.length ; i = i + period) {
+      sampledArray.push(passedArray[i]);
+    }
+
+    sampledArray.push(maxValue);  // make sure largest value gets in, doesn't matter much if duplicated
+    return sampledArray
+  },
 
   _minLng: function(column) {
     return this.facetHeatmap.minX + (this.lengthX * column);
@@ -356,24 +357,24 @@ L.LatLngBounds.prototype.getEast = function() {
 if (typeof L.MarkerCluster !== 'undefined') {
   L.MarkerCluster.prototype.initialize = function(group, zoom, a, b) {
 
-  	L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
+    L.Marker.prototype.initialize.call(this, a ? (a._cLatLng || a.getLatLng()) : new L.LatLng(0, 0), { icon: this });
 
-  	this._group = group;
-  	this._zoom = zoom;
+    this._group = group;
+    this._zoom = zoom;
 
-  	this._markers = [];
-  	this._childClusters = [];
-  	this._childCount = 0;
-  	this._iconNeedsUpdate = true;
+    this._markers = [];
+    this._childClusters = [];
+    this._childCount = 0;
+    this._iconNeedsUpdate = true;
 
-  	this._bounds = new L.LatLngBounds();
+    this._bounds = new L.LatLngBounds();
 
-  	if (a) {
-  		this._addChild(a);
-  	}
-  	if (b) {
-  		this._addChild(b);
+    if (a) {
+      this._addChild(a);
+    }
+    if (b) {
+      this._addChild(b);
       this._childCount = b.options.count;
-  	}
+    }
   };
 }
