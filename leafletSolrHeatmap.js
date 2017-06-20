@@ -323,7 +323,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
       return ':"Intersects(ENVELOPE(-180, 180, 90, -90))"';
     }
     var bounds = this._map.getBounds();
-    return ':"Intersects(ENVELOPE(' + bounds.getWest() + ', ' + bounds.getEast() + ', ' + bounds.getNorth() + ', ' + bounds.getSouth() + '))"';
+    var wrappedSw = bounds.getSouthWest().wrap();
+    var wrappedNe = bounds.getNorthEast().wrap();
+    return ':"Intersects(ENVELOPE(' + wrappedSw.lng + ', ' + wrappedNe.lng + ', ' + bounds.getNorth() + ', ' + bounds.getSouth() + '))"';
   },
 
   _mapViewToWkt: function() {
@@ -331,7 +333,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
       return '["-180 -90" TO "180 90"]';
     }
     var bounds = this._map.getBounds();
-    return '["' + bounds.getWest() + ' ' + bounds.getSouth() + '" TO "' + bounds.getEast() + ' ' + bounds.getNorth() + '"]';
+    var wrappedSw = bounds.getSouthWest().wrap();
+    var wrappedNe = bounds.getNorthEast().wrap();
+    return '["' + wrappedSw.lng + ' ' + bounds.getSouth() + '" TO "' + wrappedNe.lng + ' ' + bounds.getNorth() + '"]';
   },
 
   _solrQuery: function() {
@@ -341,16 +345,6 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
 L.solrHeatmap = function(url, options) {
   return new L.SolrHeatmap(url, options);
-};
-
-L.LatLngBounds.prototype.getWest = function() {
-  var west = this._southWest.lng;
-  return west < -180 ? -180 : west;
-};
-
-L.LatLngBounds.prototype.getEast = function() {
-  var east = this._northEast.lng;
-  return east > 180 ? 180 : east;
 };
 
 // Check if L.MarkerCluster is included
