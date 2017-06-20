@@ -19,10 +19,5 @@
     "bower_components",
     "test",
     "tests"
-  ],
-  "dependencies": {
-    "jquery": "~2.1.4",
-    "leaflet.markerclusterer": "~0.4.0",
-    "leaflet": "~0.7.3"
-  }
+  ]
 }

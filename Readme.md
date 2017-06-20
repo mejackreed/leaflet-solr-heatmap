@@ -26,12 +26,7 @@ Option | Type | Default | Description
 
 ## Running locally
 
-Download required libraries for example (Leaflet, Leaflet MarkerClusterer, jQuery)
-```sh
-bower install
-```
-
-(Optional) Install packages for running local server
+Install Dependencies
 ```sh
 npm install
 ```
