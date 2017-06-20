@@ -21,3 +21,9 @@ var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
   // Inherited from L.GeoJSON
   onEachFeature: onEachFeature
 }).addTo(map);
+
+solr.on('dataAdded', function(data) {
+  $('#responseTime').html('Solr response time: ' + solr.responseTime + ' ms');
+  var docsCount = data.response.numFound;
+  $('#numDocs').html('Number of docs: ' + docsCount.toLocaleString());
+});

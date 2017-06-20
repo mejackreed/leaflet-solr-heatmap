@@ -308,12 +308,10 @@ L.SolrHeatmap = L.GeoJSON.extend({
       },
       jsonp: 'json.wrf',
       success: function(data) {
-        var totalTime = 'Solr response time: ' + (Date.now() - startTime) + ' ms';
-        $('#responseTime').html(totalTime);
-        _this.docsCount = data.response.numFound;
-        $('#numDocs').html('Number of docs: ' + _this.docsCount.toLocaleString());
+        _this.responseTime = Date.now() - startTime;
         _this.renderStart = Date.now();
         _this._computeHeatmapObject(data);
+        _this.fireEvent('dataAdded', data);
       }
     });
   },

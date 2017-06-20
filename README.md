@@ -24,6 +24,14 @@ Option | Type | Default | Description
 `colors` | `Array` | `['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']` | Colors for heatmap.  Array can be of any length.
 `maxSampleSize` | `Number` | `Number.MAX_SAFE_INTEGER` | For improved performance, run Jenks classification on only a sample of Solr counts.  Default value turns off sampling.  Typical value is 400.
 
+### Events
+
+`L.SolrHeatmap` layers fire all of the typical events from Leaflet. Additional events include:
+
+Event | Data | Description
+----- | ---- | -----------
+`dataAdded` | `Object` | fires when data is added to the map. Returns an object which is the JSON response from the Solr server
+
 ## Running locally
 
 Install Dependencies
