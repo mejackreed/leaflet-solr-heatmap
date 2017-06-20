@@ -1,0 +1,3 @@
+collection:
+  dir: solr/conf/
+  name: default-core

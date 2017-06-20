@@ -29,5 +29,9 @@
     "jquery": "^3.2.1",
     "leaflet": "^1.0.3",
     "leaflet.markercluster": "^1.0.6"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/grunt",
+    "index": "curl 'http://localhost:8983/solr/default-core/update?commit=true' --data-binary @fixtures/data.json -H 'Content-type:application/json'"
   }
 }

@@ -10,9 +10,9 @@ function onEachFeature(feature, layer) {
 }
 
 // Create and add a solrHeatmap layer to the map
-var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/gettingstarted', {
+var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
   // Solr field with geospatial data (should be type Spatial Recursive Prefix Tree)
-  field: 'loc_srpt',
+  field: 'geo_srpt',
 
   // Set type of visualization. Allowed types: 'geojsonGrid', 'clusters' Note: 'clusters' requires LeafletMarkerClusterer
   type: 'geojsonGrid',

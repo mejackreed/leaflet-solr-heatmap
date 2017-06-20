@@ -28,12 +28,26 @@ Option | Type | Default | Description
 
 Install Dependencies
 ```sh
-npm install
+# Install JavaScript depencencies
+$ npm install
+
+# Install local solr
+$ gem install solr_wrapper
+```
+
+Run Solr
+```sh
+$ solr_wrapper
+```
+
+Index fixture data
+```sh
+$ npm run index
 ```
 
 Start local server
 ```sh
-grunt
+npm run start
 ```
 
 View the example at [http://127.0.0.1:8000/example/](http://127.0.0.1:8000/example/)
