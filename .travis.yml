@@ -1,0 +1,10 @@
+dist: trusty
+language: node_js
+node_js:
+  - node
+install:
+  - bundle install
+  - npm install
+script:
+  # Run the rake tast to execute JavaScript tests in the context of Solr
+  - bundle exec rake ci
