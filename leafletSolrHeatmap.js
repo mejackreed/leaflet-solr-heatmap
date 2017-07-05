@@ -103,7 +103,6 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var colors = _this.options.colors; 
     var classifications = _this._getClassifications(colors.length);
     _this._styleByCount(classifications);
-    _this._showRenderTime();
   },
 
   _createHeatmap: function(){
@@ -137,7 +136,6 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var heatmapLayer = L.heatLayer(heatmapCells, options);
     heatmapLayer.addTo(_this._map);
     _this.heatmapLayer = heatmapLayer;
-    _this._showRenderTime();
   },
 
   // heatmap display need hash of scaled counts value, color pairs
@@ -165,10 +163,9 @@ L.SolrHeatmap = L.GeoJSON.extend({
     return size;
 },
 
-  _showRenderTime: function() {
-    var _this = this,
-      renderTime = 'Render time: ' + (Date.now() - _this.renderStart) + ' ms';
-    $('#renderTime').html(renderTime);
+  _setRenderTime: function() {
+    var _this = this;
+    _this.renderTime = (Date.now() - _this.renderStart);
   },
 
   _createClusters: function() {
@@ -197,9 +194,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
         }).bindPopup(val.toString()));
       });
     });
-
     _this._map.addLayer(_this.clusterMarkers);
-    _this._showRenderTime();
   },
 
   _computeIntArrays: function() {
@@ -219,6 +214,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
         _this._createHeatmap();
         break;
     }
+    _this._setRenderTime();
   },
 
   _getClassifications: function(howMany)
