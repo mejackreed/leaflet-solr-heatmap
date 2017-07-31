@@ -8,7 +8,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
 
   initialize: function(url, options) {
     var _this = this;
-    options = L.setOptions(_this, options);
+    L.setOptions(_this, options);
     _this._solrUrl = url;
     _this._layers = {};
     _this._getData();
