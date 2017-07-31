@@ -18,6 +18,16 @@ describe('L.SolrHeatmap', function() {
     document.body.removeChild(div);
   });
 
+  describe('initialize', function() {
+    var solrLayer = new L.SolrHeatmap('http://127.0.0.1:8983/solr/default-core', {
+      field: 'stuff'
+    });
+    it('merges options', function() {
+      expect(solrLayer.options.field).toBe('stuff')
+      expect(solrLayer.options.type).toBe('geojsonGrid')
+    });
+  });
+
   describe('adds a SolrHeatmap layer', function() {
     var solrLayer = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
       field: 'geo_srpt',
