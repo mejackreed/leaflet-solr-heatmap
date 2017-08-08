@@ -1,25 +1,105 @@
+/**
+* A Base SolrHeatmap QueryAdapter, used for defining a request and response to
+* an API that uses the Solr Facet Heatmap functionality
+*/
+L.SolrHeatmapBaseQueryAdapter = L.Class.extend({
+  initialize: function(options, layer) {
+    this.layer = layer;
+    L.setOptions(this, options);
+  },
+  ajaxOptions: function() {
+    throw('Not implemented');
+  },
+  responseFormatter: function() {
+    throw('Not implemented');
+  }
+});
+
+/**
+* A POJO used for defining and accessing Query Adapters
+*/
+L.SolrHeatmapQueryAdapters = {
+  default: L.SolrHeatmapBaseQueryAdapter.extend({
+    ajaxOptions: function() {
+      return {
+        url: this._solrQuery(),
+        dataType: 'JSONP',
+        data: {
+          q: '*:*',
+          wt: 'json',
+           facet: true,
+           'facet.heatmap': this.options.field,
+           'facet.heatmap.geom': this.layer._mapViewToWkt(),
+           fq: this.options.field + this.layer._mapViewToEnvelope()
+        },
+        jsonp: 'json.wrf'
+      };
+    },
+    responseFormatter: function(data) {
+      this.layer.count = data.response.numFound;
+      return data.facet_counts.facet_heatmaps;
+    },
+    _solrQuery: function() {
+      return this.layer._solrUrl + '/' + this.options.solrRequestHandler + '?' + this.options.field;
+    }
+  }),
+  blacklight: L.SolrHeatmapBaseQueryAdapter.extend({
+    ajaxOptions: function() {
+      return {
+        url: this.layer._solrUrl,
+        dataType: 'JSON',
+        data: {
+          bbox: this._mapViewToBbox(),
+          format: 'json',
+        },
+        jsonp: false
+      };
+    },
+    responseFormatter: function(data) {
+      this.layer.count = data.response.pages.total_count;
+      return data.response.facet_heatmaps;
+    },
+    _mapViewToBbox: function () {
+      if (this.layer._map === undefined) {
+        return '-180,-90,180,90';
+      }
+
+      var bounds = this.layer._map.getBounds();
+      var wrappedSw = bounds.getSouthWest().wrap();
+      var wrappedNe = bounds.getNorthEast().wrap();
+      return [wrappedSw.lng, bounds.getSouth(), wrappedNe.lng, bounds.getNorth()].join(',');
+    }
+  })
+}
+
+/**
+* A Leaflet extension to be used for adding a SolrHeatmap layer to a Leaflet map
+*/
 L.SolrHeatmap = L.GeoJSON.extend({
   options: {
     solrRequestHandler: 'select',
     type: 'geojsonGrid',
     colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'],
-    maxSampleSize: Number.MAX_SAFE_INTEGER  // for Jenks classification
+    maxSampleSize: Number.MAX_SAFE_INTEGER,  // for Jenks classification
+    queryAdapter: 'default'
   },
 
   initialize: function(url, options) {
     var _this = this;
     L.setOptions(_this, options);
+    _this.queryAdapter = new L.SolrHeatmapQueryAdapters[this.options.queryAdapter](this.options, _this);
     _this._solrUrl = url;
     _this._layers = {};
     _this._getData();
   },
-  
+
   onAdd: function (map) {
     var _this = this;
     // Call the parent function
     L.GeoJSON.prototype.onAdd.call(_this, map);
 
     map.on('moveend', function () {
+      console.log('moveend')
       _this._clearLayers();
       _this._getData();
     });
@@ -28,7 +108,7 @@ L.SolrHeatmap = L.GeoJSON.extend({
   _computeHeatmapObject: function(data) {
     var _this = this;
     _this.facetHeatmap = {},
-      facetHeatmapArray = data.facet_counts.facet_heatmaps[this.options.field];
+      facetHeatmapArray = _this.queryAdapter.responseFormatter(data)[this.options.field];
 
     // Convert array to an object
     $.each(facetHeatmapArray, function(index, value) {
@@ -291,25 +371,14 @@ L.SolrHeatmap = L.GeoJSON.extend({
   _getData: function() {
     var _this = this;
     var startTime = Date.now();
-    $.ajax({
-      url: _this._solrUrl + _this._solrQuery(),
-      dataType: 'JSONP',
-      data: {
-        q: '*:*',
-        wt: 'json',
-        facet: true,
-        'facet.heatmap': _this.options.field,
-        'facet.heatmap.geom': _this._mapViewToWkt(),
-        fq: _this.options.field + _this._mapViewToEnvelope()
-      },
-      jsonp: 'json.wrf',
-      success: function(data) {
-        _this.responseTime = Date.now() - startTime;
-        _this.renderStart = Date.now();
-        _this._computeHeatmapObject(data);
-        _this.fireEvent('dataAdded', data);
-      }
-    });
+    var options = _this.queryAdapter.ajaxOptions();
+    options.success = function(data) {
+      _this.responseTime = Date.now() - startTime;
+      _this.renderStart = Date.now();
+      _this._computeHeatmapObject(data);
+      _this.fireEvent('dataAdded', data);
+    }
+    $.ajax(options);
   },
 
   _mapViewToEnvelope: function() {
@@ -330,10 +399,6 @@ L.SolrHeatmap = L.GeoJSON.extend({
     var wrappedSw = bounds.getSouthWest().wrap();
     var wrappedNe = bounds.getNorthEast().wrap();
     return '["' + wrappedSw.lng + ' ' + bounds.getSouth() + '" TO "' + wrappedNe.lng + ' ' + bounds.getNorth() + '"]';
-  },
-
-  _solrQuery: function() {
-    return '/' + this.options.solrRequestHandler + '?' + this.options.field;
   }
 });
 

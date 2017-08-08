@@ -23,6 +23,7 @@ Option | Type | Default | Description
 `solrRequestHandler` | `String` | `'select'` | Request handler for Solr
 `colors` | `Array` | `['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']` | Colors for heatmap.  Array can be of any length.
 `maxSampleSize` | `Number` | `Number.MAX_SAFE_INTEGER` | For improved performance, run Jenks classification on only a sample of Solr counts.  Default value turns off sampling.  Typical value is 400.
+`queryAdapter` | 'String' | `default` | A query adapter used to connect to a Solr interface. Useful for querying applications that may proxy through Solr.
 
 ### Events
 
@@ -59,3 +60,11 @@ npm run start
 ```
 
 View the example at [http://127.0.0.1:8000/example/](http://127.0.0.1:8000/example/)
+
+## Adapting to different API interfaces
+
+Leaflet Solr Heatmap uses an abstracted query adapater, that can be used to query API's besides the default Solr API. This has been used in [Blacklight Heatmaps](https://github.com/sul-dlss/blacklight_heatmaps). Adapters can be added to the `L.SolrHeatmapQueryAdapters` object and then selected using the `L.solrHeatmap` options instantiation. Query adapters need to implment the following methods:
+
+Method | Returns | Purpose
+`ajaxOptions` | `Object` | Merged options object that defines `$.ajax` url and settings.
+`responseFormatter` | `Object` | A way to access a custom API resposne formatter. Should return an `Object` that behaves as the Solr Facet Heatmap JSON response (or just passes it through).
