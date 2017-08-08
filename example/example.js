@@ -24,7 +24,7 @@ var solr = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
 
 solr.on('dataAdded', function(data) {
   $('#responseTime').html('Solr response time: ' + solr.responseTime + ' ms');
-  var docsCount = data.response.numFound;
+  var docsCount = solr.count;
   $('#numDocs').html('Number of docs: ' + docsCount.toLocaleString());
   $('#renderTime').html('Render time: ' + solr.renderTime + ' ms');
 });
