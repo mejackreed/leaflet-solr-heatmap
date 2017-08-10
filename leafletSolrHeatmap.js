@@ -7,7 +7,10 @@ L.SolrHeatmapBaseQueryAdapter = L.Class.extend({
     this.layer = layer;
     L.setOptions(this, options);
   },
-  ajaxOptions: function() {
+  /*
+  * @param bounds optional param for a spatial query
+  */
+  ajaxOptions: function(bounds) {
     throw('Not implemented');
   },
   responseFormatter: function() {
@@ -20,7 +23,7 @@ L.SolrHeatmapBaseQueryAdapter = L.Class.extend({
 */
 L.SolrHeatmapQueryAdapters = {
   default: L.SolrHeatmapBaseQueryAdapter.extend({
-    ajaxOptions: function() {
+    ajaxOptions: function(bounds) {
       return {
         url: this._solrQuery(),
         dataType: 'JSONP',
@@ -29,8 +32,8 @@ L.SolrHeatmapQueryAdapters = {
           wt: 'json',
            facet: true,
            'facet.heatmap': this.options.field,
-           'facet.heatmap.geom': this.layer._mapViewToWkt(),
-           fq: this.options.field + this.layer._mapViewToEnvelope()
+           'facet.heatmap.geom': this.layer._mapViewToWkt(bounds),
+           fq: this.options.field + this.layer._mapViewToEnvelope(bounds)
         },
         jsonp: 'json.wrf'
       };
@@ -44,12 +47,12 @@ L.SolrHeatmapQueryAdapters = {
     }
   }),
   blacklight: L.SolrHeatmapBaseQueryAdapter.extend({
-    ajaxOptions: function() {
+    ajaxOptions: function(bounds) {
       return {
         url: this.layer._solrUrl,
         dataType: 'JSON',
         data: {
-          bbox: this._mapViewToBbox(),
+          bbox: this._mapViewToBbox(bounds),
           format: 'json',
         },
         jsonp: false
@@ -59,12 +62,13 @@ L.SolrHeatmapQueryAdapters = {
       this.layer.count = data.response.pages.total_count;
       return data.response.facet_heatmaps;
     },
-    _mapViewToBbox: function () {
+    _mapViewToBbox: function (bounds) {
       if (this.layer._map === undefined) {
         return '-180,-90,180,90';
       }
-
-      var bounds = this.layer._map.getBounds();
+      if (bounds === undefined) {
+        bounds = this._map.getBounds();
+      }
       var wrappedSw = bounds.getSouthWest().wrap();
       var wrappedNe = bounds.getNorthEast().wrap();
       return [wrappedSw.lng, bounds.getSouth(), wrappedNe.lng, bounds.getNorth()].join(',');
@@ -81,7 +85,8 @@ L.SolrHeatmap = L.GeoJSON.extend({
     type: 'geojsonGrid',
     colors: ['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043'],
     maxSampleSize: Number.MAX_SAFE_INTEGER,  // for Jenks classification
-    queryAdapter: 'default'
+    queryAdapter: 'default',
+    queryRadius: 40, // In pixels, used for nearby query
   },
 
   initialize: function(url, options) {
@@ -90,19 +95,49 @@ L.SolrHeatmap = L.GeoJSON.extend({
     _this.queryAdapter = new L.SolrHeatmapQueryAdapters[this.options.queryAdapter](this.options, _this);
     _this._solrUrl = url;
     _this._layers = {};
-    _this._getData();
   },
 
   onAdd: function (map) {
-    var _this = this;
     // Call the parent function
-    L.GeoJSON.prototype.onAdd.call(_this, map);
+    L.GeoJSON.prototype.onAdd.call(this, map);
 
-    map.on('moveend', function () {
-      console.log('moveend')
-      _this._clearLayers();
-      _this._getData();
-    });
+    map.on('moveend', this._resetLayer, this);
+  },
+
+  onRemove: function(map) {
+    // Call the parent function
+    L.GeoJSON.prototype.onRemove.call(this, map);
+    map.off('moveend', this._resetLayer, this);
+  },
+
+  beforeAdd: function() {
+    this._getData();
+  },
+
+  _resetLayer: function() {
+    this._clearLayers();
+    this._getData();
+  },
+
+  _queryNearby: function(bounds) {
+    var _this = this;
+    var startTime = Date.now();
+    var options = _this.queryAdapter.ajaxOptions(bounds);
+    options.success = function(data) {
+      _this.nearbyResponseTime = Date.now() - startTime;
+      data.bounds = bounds;
+      _this.fireEvent('nearbyQueried', data);
+    }
+    $.ajax(options);
+  },
+
+  requestNearby: function(layerPoint) {
+    var dist = this.options.queryRadius;
+    var bounds = L.latLngBounds(
+      this._map.layerPointToLatLng([layerPoint.x + dist, layerPoint.y + dist]),
+      this._map.layerPointToLatLng([layerPoint.x - dist, layerPoint.y - dist])
+    );
+    this._queryNearby(bounds);
   },
 
   _computeHeatmapObject: function(data) {
@@ -381,21 +416,25 @@ L.SolrHeatmap = L.GeoJSON.extend({
     $.ajax(options);
   },
 
-  _mapViewToEnvelope: function() {
+  _mapViewToEnvelope: function(bounds) {
     if (this._map === undefined) {
       return ':"Intersects(ENVELOPE(-180, 180, 90, -90))"';
     }
-    var bounds = this._map.getBounds();
+    if (bounds === undefined) {
+      bounds = this._map.getBounds();
+    }
     var wrappedSw = bounds.getSouthWest().wrap();
     var wrappedNe = bounds.getNorthEast().wrap();
     return ':"Intersects(ENVELOPE(' + wrappedSw.lng + ', ' + wrappedNe.lng + ', ' + bounds.getNorth() + ', ' + bounds.getSouth() + '))"';
   },
 
-  _mapViewToWkt: function() {
+  _mapViewToWkt: function(bounds) {
     if (this._map === undefined) {
       return '["-180 -90" TO "180 90"]';
     }
-    var bounds = this._map.getBounds();
+    if (bounds === undefined) {
+      bounds = this._map.getBounds();
+    }
     var wrappedSw = bounds.getSouthWest().wrap();
     var wrappedNe = bounds.getNorthEast().wrap();
     return '["' + wrappedSw.lng + ' ' + bounds.getSouth() + '" TO "' + wrappedNe.lng + ' ' + bounds.getNorth() + '"]';

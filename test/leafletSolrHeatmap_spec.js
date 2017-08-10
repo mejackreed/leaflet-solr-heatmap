@@ -29,16 +29,18 @@ describe('L.SolrHeatmap', function() {
   });
 
   describe('adds a SolrHeatmap layer', function() {
-    var solrLayer = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
-      field: 'geo_srpt',
-      type: 'geojsonGrid'
-    });
+    var solrLayer;
+
     it('with heatmap polygons on map', function(done) {
-      map.addLayer(solrLayer);
+      solrLayer = L.solrHeatmap('http://127.0.0.1:8983/solr/default-core', {
+        field: 'geo_srpt',
+        type: 'geojsonGrid'
+      })//.addTo(map);
       solrLayer.on('dataAdded', function() {
         expect(Object.keys(solrLayer._layers).length).toBe(52);
         done();
-      })
+      });
+      map.addLayer(solrLayer);
     });
   });
 });

@@ -23,7 +23,8 @@ Option | Type | Default | Description
 `solrRequestHandler` | `String` | `'select'` | Request handler for Solr
 `colors` | `Array` | `['#f1eef6', '#d7b5d8', '#df65b0', '#dd1c77', '#980043']` | Colors for heatmap.  Array can be of any length.
 `maxSampleSize` | `Number` | `Number.MAX_SAFE_INTEGER` | For improved performance, run Jenks classification on only a sample of Solr counts.  Default value turns off sampling.  Typical value is 400.
-`queryAdapter` | 'String' | `default` | A query adapter used to connect to a Solr interface. Useful for querying applications that may proxy through Solr.
+`queryAdapter` | `String` | `default` | A query adapter used to connect to a Solr interface. Useful for querying applications that may proxy through Solr.
+`queryRadius` | `Number` | 40 | Radius (in pixels) used for querying nearby data
 
 ### Events
 
