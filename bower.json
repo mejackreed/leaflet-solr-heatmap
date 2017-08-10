@@ -1,6 +1,6 @@
 {
   "name": "leaflet-solr-heatmap",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "A Leaflet plugin using Solr 5.x heatmap facets",
   "main": "leafletSolrHeatmap.js",
   "keywords": [

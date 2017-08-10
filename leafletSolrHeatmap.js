@@ -1,4 +1,10 @@
 /**
+  Leaflet-Solr-Heatmap v0.3.0
+  by Jack Reed, @mejackreed
+     Steve McDonald, @spacemansteve
+*/
+
+/**
 * A Base SolrHeatmap QueryAdapter, used for defining a request and response to
 * an API that uses the Solr Facet Heatmap functionality
 */
