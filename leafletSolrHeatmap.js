@@ -244,11 +244,11 @@ L.SolrHeatmap = L.GeoJSON.extend({
         if (val === 0) {
           return;
         }
-  var scaledValue = Math.min((val / maxValue), 1);
-  var current = [_this._minLat(row), _this._minLng(column), scaledValue];
-  heatmapCells.push(current);
-  // need to create options object to set gradient, blu, radius, max
-      })
+        var scaledValue = Math.min((val / maxValue), 1);
+        var current = [_this._minLat(row), _this._minLng(column), scaledValue];
+        heatmapCells.push(current);
+        // need to create options object to set gradient, blu, radius, max
+      });
     });
 
     // settting max due to bug
